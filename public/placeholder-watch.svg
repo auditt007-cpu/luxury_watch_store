@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000" viewBox="0 0 800 1000">
+  <rect width="800" height="1000" fill="#111"/>
+  <circle cx="400" cy="460" r="210" fill="none" stroke="#c9a227" stroke-width="3"/>
+  <circle cx="400" cy="460" r="12" fill="#c9a227"/>
+  <line x1="400" y1="280" x2="400" y2="320" stroke="#c9a227" stroke-width="4"/>
+  <line x1="400" y1="600" x2="400" y2="640" stroke="#c9a227" stroke-width="4"/>
+  <line x1="220" y1="460" x2="260" y2="460" stroke="#c9a227" stroke-width="4"/>
+  <line x1="540" y1="460" x2="580" y2="460" stroke="#c9a227" stroke-width="4"/>
+  <text x="400" y="820" text-anchor="middle" fill="#e6d5a0" font-size="22" font-family="serif">ATELIER HORLOGE</text>
+</svg>

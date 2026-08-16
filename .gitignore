@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+
+# next
+.next/
+out/
+dist/
+
+# env & secrets
+.env
+.env.local
+.env.*.local
+cookies.txt
+
+# databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# logs & probes
+*.log
+_probe_*.py
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Product images are stored locally after scraping and can be hundreds of MB.
+# Keep the folder, ignore the files.
+public/uploads/goods/**
+!public/uploads/goods/.gitkeep
