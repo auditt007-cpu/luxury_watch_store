@@ -2,18 +2,15 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Gallery } from "@/components/Gallery";
 import { ProductDescription } from "@/components/ProductDescription";
-import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/product";
-import { toDTO } from "@/lib/serialize";
+import { getPublishedProduct } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await prisma.product.findFirst({
-    where: { OR: [{ id: params.id }, { sourceId: params.id }], published: true },
-  });
-  if (!product) notFound();
-  const dto = toDTO(product);
+  const dto = await getPublishedProduct(params.id);
+  if (!dto) notFound();
 
   return (
     <>

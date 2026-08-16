@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ContactFloat } from "@/components/ContactFloat";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 const brand = process.env.NEXT_PUBLIC_BRAND || "ATELIER HORLOGE";
 
 export const metadata: Metadata = {
