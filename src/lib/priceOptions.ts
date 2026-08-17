@@ -126,7 +126,7 @@ export function parsePriceOptions(
   price = 0,
   priceText = "",
 ): PriceOption[] {
-  const text = [title, description].filter(Boolean).join("\n");
+  const text = [title, description, priceText].filter(Boolean).join("\n");
 
   const numbered = parseNumberedTiers(text);
   if (numbered.length >= 2) return mergeOptions(numbered);
@@ -170,4 +170,29 @@ export function displayPriceSummary(
 export function productHeadline(title: string) {
   const first = title.split(/\n/)[0]?.trim() || title.trim();
   return first.split(/[,，]\s*配置[：:]/)[0]?.trim() || first;
+}
+
+export function serializePriceTiers(tiers: Array<{ label: string; price: number }>) {
+  if (!tiers.length) return { price: 0, priceText: "", descriptionSuffix: "" };
+  if (tiers.length === 1 && !tiers[0].label.trim()) {
+    return { price: tiers[0].price, priceText: "", descriptionSuffix: "" };
+  }
+  const unlabeled = tiers.every((tier) => !tier.label.trim());
+  if (unlabeled) {
+    return {
+      price: tiers[0].price,
+      priceText: tiers.map((tier) => tier.price).join("/"),
+      descriptionSuffix: "",
+    };
+  }
+  const block = tiers
+    .map((tier, index) => `${index + 1}，${tier.label || `配置${index + 1}`}，P${tier.price}。`)
+    .join("\n");
+  return { price: tiers[0].price, priceText: "", descriptionSuffix: `\n配置：\n${block}` };
+}
+
+export function applyPriceTiersToDescription(description: string, suffix: string) {
+  const base = description.split(/\n配置[：:]/)[0]?.trim() || "";
+  if (!suffix.trim()) return base;
+  return `${base}${suffix}`;
 }

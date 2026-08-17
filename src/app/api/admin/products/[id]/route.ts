@@ -18,9 +18,23 @@ export async function GET(_req: Request, { params }: Ctx) {
 export async function PATCH(request: Request, { params }: Ctx) {
   if (!isAdmin()) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   const body = await request.json();
+  const data: {
+    published?: boolean;
+    title?: string;
+    price?: number;
+    priceText?: string;
+    description?: string;
+  } = {};
+
+  if ("published" in body) data.published = Boolean(body.published);
+  if ("title" in body) data.title = String(body.title || "").trim() || "未命名商品";
+  if ("price" in body) data.price = Number(body.price) || 0;
+  if ("priceText" in body) data.priceText = String(body.priceText || "");
+  if ("description" in body) data.description = String(body.description || "");
+
   const product = await prisma.product.update({
     where: { id: params.id },
-    data: { published: Boolean(body.published) },
+    data,
   });
   return NextResponse.json(toDTO(product));
 }

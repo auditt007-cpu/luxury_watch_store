@@ -1,9 +1,8 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ProductDescription } from "@/components/ProductDescription";
 import { ConfigPriceSelector } from "@/components/ConfigPriceSelector";
-import { ProductBackLink } from "@/components/ProductBackLink";
 import { resolveMajorCategory } from "@/lib/category";
 import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
@@ -42,9 +41,6 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
 
   return (
     <div className="space-y-6">
-      <Suspense fallback={null}>
-        <ProductBackLink />
-      </Suspense>
       <p className="text-xs tracking-[0.3em] text-gold">{translateCategory(major, locale)}</p>
       <h1 className="whitespace-pre-wrap font-serif text-3xl text-gold-soft sm:text-4xl">{headline}</h1>
       <ConfigPriceSelector options={options} onChange={setSelected} />

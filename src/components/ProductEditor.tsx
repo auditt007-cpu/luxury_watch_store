@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminPriceEditor } from "@/components/AdminPriceEditor";
 import { CATEGORIES, type ProductDTO } from "@/lib/product";
 
 export default function ProductEditor({
@@ -91,24 +92,16 @@ export default function ProductEditor({
             ))}
           </select>
         </label>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 text-sm">
-            价格数字
-            <input
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full border border-gold/25 bg-transparent px-3 py-2"
-            />
-          </label>
-          <label className="block space-y-2 text-sm">
-            价格文案
-            <input
-              value={priceText}
-              onChange={(e) => setPriceText(e.target.value)}
-              className="w-full border border-gold/25 bg-transparent px-3 py-2"
-            />
-          </label>
-        </div>
+        <AdminPriceEditor
+          title={title}
+          description={description}
+          price={price}
+          priceText={priceText}
+          onTitleChange={setTitle}
+          onDescriptionChange={setDescription}
+          onPriceChange={setPrice}
+          onPriceTextChange={setPriceText}
+        />
         <label className="block space-y-2 text-sm">
           描述（支持换行，Clean厂/VS厂参数会自动排版）
           <textarea

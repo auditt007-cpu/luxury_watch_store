@@ -3,6 +3,7 @@
 import { I18nProvider } from "@/lib/i18n";
 import { UIProvider } from "@/lib/ui";
 import { ContactFloat } from "@/components/ContactFloat";
+import { MatchBackFab } from "@/components/MatchBackFab";
 import { PickMatch } from "@/components/PickMatch";
 import { Toast, WeChatModal } from "@/components/WeChatModal";
 import { WeChatBrowserGuide } from "@/components/WeChatBrowserGuide";
@@ -13,6 +14,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
       <UIProvider>
         {children}
         <ContactFloat />
+        <MatchBackFab />
         <PickMatch />
         <WeChatModal />
         <Toast />
