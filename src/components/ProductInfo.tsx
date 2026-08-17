@@ -1,11 +1,14 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { ProductDescription } from "@/components/ProductDescription";
+import { ConfigPriceSelector } from "@/components/ConfigPriceSelector";
 import { resolveMajorCategory } from "@/lib/category";
 import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
 import { translateCategory } from "@/lib/messages";
-import { formatPrice, type ProductDTO } from "@/lib/product";
+import { parsePriceOptions, productHeadline, type PriceOption } from "@/lib/priceOptions";
+import { type ProductDTO } from "@/lib/product";
 import { whatsappLink } from "@/lib/contact";
 import { useUI } from "@/lib/ui";
 
@@ -13,14 +16,33 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
   const { locale, t } = useI18n();
   const { openWechat, showToast } = useUI();
   const major = resolveMajorCategory(product.category, product.title, product.description, product.tags);
-  const { headline, body } = splitProductCopy(product.title, product.description);
-  const inquiry = `${t("inquiryPrefix")}${product.title}`;
+  const headline = productHeadline(product.title);
+  const { body } = splitProductCopy(product.title, product.description);
+
+  const options = useMemo(
+    () => parsePriceOptions(product.title, product.description, product.price, product.priceText),
+    [product.description, product.price, product.priceText, product.title],
+  );
+
+  const [selected, setSelected] = useState<PriceOption | null>(options[0] || null);
+
+  const inquiry = useMemo(() => {
+    const configLine = selected?.label
+      ? `\n配置：${selected.label}（${selected.priceText}）`
+      : selected?.priceText
+        ? `\n价格：${selected.priceText}`
+        : "";
+    return `${t("inquiryPrefix")}${headline}${configLine}`;
+  }, [headline, selected, t]);
 
   return (
     <div className="space-y-6">
       <p className="text-xs tracking-[0.3em] text-gold">{translateCategory(major, locale)}</p>
       <h1 className="whitespace-pre-wrap font-serif text-3xl text-gold-soft sm:text-4xl">{headline}</h1>
-      <p className="text-2xl text-gold">{formatPrice(product.price, product.priceText, t("inquire"))}</p>
+      <ConfigPriceSelector
+        options={options}
+        onChange={(option) => setSelected(option)}
+      />
       {product.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {product.tags.map((tag) => (
