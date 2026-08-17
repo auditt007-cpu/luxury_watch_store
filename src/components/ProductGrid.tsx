@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { resolveMajorCategory } from "@/lib/category";
 import { coverOf, formatPrice, type ProductDTO } from "@/lib/product";
 
 export function ProductGrid({ products }: { products: ProductDTO[] }) {
@@ -27,7 +28,9 @@ export function ProductGrid({ products }: { products: ProductDTO[] }) {
             />
           </div>
           <div className="space-y-2 p-5">
-            <p className="text-[11px] tracking-[0.25em] text-gold">{product.category}</p>
+            <p className="text-[11px] tracking-[0.25em] text-gold">
+              {resolveMajorCategory(product.category, product.title, product.description, product.tags)}
+            </p>
             <h3 className="line-clamp-2 font-serif text-lg text-gold-soft">{product.title}</h3>
             <p className="text-sm text-zinc-400">{formatPrice(product.price, product.priceText)}</p>
           </div>

@@ -1,15 +1,6 @@
-export const CATEGORIES = [
-  "全部",
-  "劳力士",
-  "水鬼",
-  "迪通拿",
-  "爱彼",
-  "百达翡丽",
-  "欧米茄",
-  "卡地亚",
-  "浪琴",
-  "其他",
-] as const;
+import { MAJOR_CATEGORIES } from "./category";
+
+export const CATEGORIES = MAJOR_CATEGORIES;
 
 export type ProductDTO = {
   id: string;

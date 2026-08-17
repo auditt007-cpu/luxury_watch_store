@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { matchesMajorCategory } from "./category";
 import { toDTO } from "./serialize";
 import type { ProductDTO } from "./product";
 
@@ -52,7 +53,9 @@ export function productsFromJson(): ProductDTO[] {
 function filterProducts(list: ProductDTO[], q: string, category: string) {
   const keyword = q.trim().toLowerCase();
   return list.filter((item) => {
-    if (category && category !== "全部" && item.category !== category) return false;
+    if (!matchesMajorCategory(category, item.category, item.title, item.description, item.tags)) {
+      return false;
+    }
     if (!keyword) return true;
     const blob = `${item.title} ${item.description} ${item.category} ${item.tags.join(" ")}`.toLowerCase();
     return blob.includes(keyword);
@@ -91,7 +94,6 @@ export async function listPublishedProducts(q = "", category = ""): Promise<Prod
       const rows = await prisma.product.findMany({
         where: {
           published: true,
-          ...(category && category !== "全部" ? { category } : {}),
           ...(q
             ? {
                 OR: [
@@ -105,7 +107,7 @@ export async function listPublishedProducts(q = "", category = ""): Promise<Prod
         },
         orderBy: { createdAt: "desc" },
       });
-      if (rows.length) return rows.map(toDTO);
+      if (rows.length) return filterProducts(rows.map(toDTO), q, category);
     } catch (error) {
       console.warn("SQLite unavailable, falling back to products.json", error);
     }

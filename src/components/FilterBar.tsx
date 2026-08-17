@@ -18,7 +18,7 @@ export function FilterBar({ current, query }: { current: string; query: string }
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8">
-      <div className="flex flex-wrap gap-2">
+      <div className="category-tabs -mx-5 flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth px-5 pb-1">
         {CATEGORIES.map((cat) => {
           const active = current === cat || (cat === "全部" && !current);
           return (
@@ -26,7 +26,7 @@ export function FilterBar({ current, query }: { current: string; query: string }
               key={cat}
               type="button"
               onClick={() => update({ category: cat === "全部" ? "" : cat })}
-              className={`rounded-full border px-4 py-1.5 text-xs tracking-widest ${
+              className={`snap-start whitespace-nowrap rounded-full border px-4 py-1.5 text-xs tracking-widest transition ${
                 active
                   ? "border-gold bg-gold text-ink"
                   : "border-gold/25 text-gold-soft hover:border-gold/60"

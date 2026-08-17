@@ -86,7 +86,7 @@ export default function ProductEditor({
             onChange={(e) => setCategory(e.target.value)}
             className="w-full border border-gold/25 bg-ink px-3 py-2"
           >
-            {CATEGORIES.filter((c) => c !== "全部").map((c) => (
+            {[...new Set([...CATEGORIES.filter((c) => c !== "全部"), "其他", category])].map((c) => (
               <option key={c}>{c}</option>
             ))}
           </select>

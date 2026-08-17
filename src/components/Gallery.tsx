@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { coverOf } from "@/lib/product";
 
@@ -10,7 +11,14 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-gold/20 bg-black">
-        <img src={list[active]} alt={title} className="aspect-square w-full object-contain" />
+        <img
+          src={list[active]}
+          alt={title}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="aspect-square w-full object-contain"
+        />
       </div>
       {list.length > 1 && (
         <div className="grid grid-cols-5 gap-2 sm:grid-cols-6">
@@ -23,7 +31,16 @@ export function Gallery({ images, title }: { images: string[]; title: string }) 
                 active === index ? "border-gold" : "border-gold/15"
               }`}
             >
-              <img src={src} alt="" className="aspect-square w-full object-cover" />
+              <Image
+                src={src}
+                alt=""
+                width={160}
+                height={160}
+                unoptimized
+                priority
+                loading="eager"
+                className="aspect-square h-full w-full object-cover"
+              />
             </button>
           ))}
         </div>

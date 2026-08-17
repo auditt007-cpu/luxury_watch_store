@@ -11,7 +11,6 @@ export function Header() {
         </Link>
         <nav className="flex items-center gap-6 text-xs tracking-[0.2em] text-gold-soft/80">
           <Link href="/#collection">COLLECTION</Link>
-          <Link href="/admin">ADMIN</Link>
         </nav>
       </div>
     </header>
