@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { ContactFloat } from "@/components/ContactFloat";
+import { AppProviders } from "@/components/AppProviders";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -24,8 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="font-sans antialiased">
-        {children}
-        <ContactFloat />
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

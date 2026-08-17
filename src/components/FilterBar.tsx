@@ -2,10 +2,13 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { CATEGORIES } from "@/lib/product";
+import { useI18n } from "@/lib/i18n";
+import { translateCategory } from "@/lib/messages";
 
 export function FilterBar({ current, query }: { current: string; query: string }) {
   const router = useRouter();
   const params = useSearchParams();
+  const { locale, t } = useI18n();
 
   function update(next: Record<string, string>) {
     const sp = new URLSearchParams(params.toString());
@@ -32,14 +35,14 @@ export function FilterBar({ current, query }: { current: string; query: string }
                   : "border-gold/25 text-gold-soft hover:border-gold/60"
               }`}
             >
-              {cat}
+              {translateCategory(cat, locale)}
             </button>
           );
         })}
       </div>
       <input
         defaultValue={query}
-        placeholder="搜索型号 / 文案 / 工厂..."
+        placeholder={t("search")}
         onKeyDown={(event) => {
           if (event.key === "Enter") {
             update({ q: (event.target as HTMLInputElement).value.trim() });

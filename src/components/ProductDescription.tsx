@@ -1,10 +1,15 @@
+"use client";
+
+import { formatProductText } from "@/lib/formatText";
+import { useI18n } from "@/lib/i18n";
+
 type Row = { label: string; value: string };
 
 function parseLines(text: string): { intro: string[]; rows: Row[]; rest: string[] } {
   const intro: string[] = [];
   const rows: Row[] = [];
   const rest: string[] = [];
-  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  const lines = formatProductText(text).split("\n");
 
   for (const raw of lines) {
     const line = raw.trim();
@@ -25,17 +30,15 @@ function parseLines(text: string): { intro: string[]; rows: Row[]; rest: string[
 }
 
 export function ProductDescription({ text }: { text: string }) {
-  if (!text.trim()) {
-    return <p className="text-sm text-zinc-500">暂无详细配置文案。</p>;
-  }
-
+  const { t } = useI18n();
+  if (!text.trim()) return null;
   const { intro, rows, rest } = parseLines(text);
   const compare = rows.filter((row) => /clean|vs厂|vs\b|对比|厂/i.test(row.label + row.value));
 
   return (
     <div className="space-y-6 text-sm leading-7 text-zinc-300">
       {intro.length > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 whitespace-pre-wrap">
           {intro.map((line, i) => (
             <p key={i}>{line}</p>
           ))}
@@ -44,7 +47,7 @@ export function ProductDescription({ text }: { text: string }) {
 
       {compare.length >= 2 && (
         <div>
-          <h3 className="mb-3 font-serif text-lg text-gold">Clean 厂 / VS 厂对照</h3>
+          <h3 className="mb-3 font-serif text-lg text-gold">{t("compare")}</h3>
           <div className="overflow-hidden rounded-xl border border-gold/20">
             {compare.map((row) => (
               <div
@@ -52,7 +55,7 @@ export function ProductDescription({ text }: { text: string }) {
                 className="grid grid-cols-[120px_1fr] border-b border-gold/10 last:border-b-0"
               >
                 <div className="bg-white/5 px-4 py-3 text-gold">{row.label}</div>
-                <div className="px-4 py-3">{row.value}</div>
+                <div className="whitespace-pre-wrap px-4 py-3">{row.value}</div>
               </div>
             ))}
           </div>
@@ -61,17 +64,19 @@ export function ProductDescription({ text }: { text: string }) {
 
       {rows.filter((row) => !compare.includes(row)).length > 0 && (
         <div>
-          <h3 className="mb-3 font-serif text-lg text-gold">配置参数</h3>
+          <h3 className="mb-3 font-serif text-lg text-gold">{t("specs")}</h3>
           <div className="overflow-hidden rounded-xl border border-gold/20">
-            {rows.filter((row) => !compare.includes(row)).map((row, i) => (
-              <div
-                key={`${row.label}-${i}`}
-                className="grid grid-cols-[120px_1fr] border-b border-gold/10 last:border-b-0"
-              >
-                <div className="bg-white/5 px-4 py-3 text-gold">{row.label}</div>
-                <div className="whitespace-pre-wrap px-4 py-3">{row.value}</div>
-              </div>
-            ))}
+            {rows
+              .filter((row) => !compare.includes(row))
+              .map((row, i) => (
+                <div
+                  key={`${row.label}-${i}`}
+                  className="grid grid-cols-[120px_1fr] border-b border-gold/10 last:border-b-0"
+                >
+                  <div className="bg-white/5 px-4 py-3 text-gold">{row.label}</div>
+                  <div className="whitespace-pre-wrap px-4 py-3">{row.value}</div>
+                </div>
+              ))}
           </div>
         </div>
       )}

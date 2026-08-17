@@ -26,9 +26,9 @@ export function parseJsonArray(value: string): string[] {
   }
 }
 
-export function formatPrice(price: number, priceText?: string) {
+export function formatPrice(price: number, priceText?: string, inquireLabel = "询价") {
   if (priceText && /[¥$€]|万/.test(priceText)) return priceText;
-  if (!price) return "询价";
+  if (!price) return inquireLabel;
   return `¥ ${price.toLocaleString("zh-CN")}`;
 }
 

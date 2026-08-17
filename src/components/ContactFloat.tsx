@@ -1,19 +1,27 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-
-const wa = process.env.NEXT_PUBLIC_WHATSAPP || "";
-const wechat = process.env.NEXT_PUBLIC_WECHAT || "";
+import { whatsappLink } from "@/lib/contact";
+import { useI18n } from "@/lib/i18n";
+import { useUI } from "@/lib/ui";
 
 export function ContactFloat() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/admin")) return null;
-  const waHref = wa ? `https://wa.me/${wa.replace(/[^\d]/g, "")}` : "https://wa.me/";
+  const { t } = useI18n();
+  const { openWechat, openMatch, matchOpen, likesOpen } = useUI();
+  if (pathname?.startsWith("/admin") || matchOpen || likesOpen) return null;
 
   return (
     <div className="fixed bottom-6 right-5 z-50 flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={openMatch}
+        className="flex h-12 items-center gap-2 rounded-full border border-gold/40 bg-ink px-4 text-sm text-gold shadow-gold"
+      >
+        {t("pickMatch")}
+      </button>
       <a
-        href={waHref}
+        href={whatsappLink()}
         target="_blank"
         rel="noreferrer"
         className="flex h-12 items-center gap-2 rounded-full border border-gold/40 bg-ink px-4 text-sm text-gold shadow-gold"
@@ -22,17 +30,10 @@ export function ContactFloat() {
       </a>
       <button
         type="button"
-        onClick={async () => {
-          if (wechat) {
-            await navigator.clipboard.writeText(wechat);
-            alert(`微信号已复制：${wechat}`);
-          } else {
-            alert("请在 .env 中配置 NEXT_PUBLIC_WECHAT");
-          }
-        }}
+        onClick={() => openWechat()}
         className="flex h-12 items-center gap-2 rounded-full border border-gold/40 bg-gold px-4 text-sm text-ink"
       >
-        微信咨询
+        {t("wechat")}
       </button>
     </div>
   );
