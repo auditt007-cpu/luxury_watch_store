@@ -57,8 +57,9 @@ export function PickMatch() {
     fetch("/api/catalog")
       .then((res) => res.json())
       .then((rows: MatchCard[]) => {
-        setPool(rows);
-        setDeck(shuffle(rows));
+        const watches = rows.filter((item) => item.category === "腕表");
+        setPool(watches);
+        setDeck(shuffle(watches));
       })
       .catch(() => undefined);
   }, [matchOpen, pool.length]);

@@ -3,8 +3,8 @@ export type Locale = "zh" | "en";
 export const messages = {
   zh: {
     collection: "系列",
-    pickMatch: "精品推荐",
-    pickMatchEn: "Pick & Match",
+    pickMatch: "价格速查",
+    pickMatchEn: "Price Check",
     all: "全部",
     watch: "腕表",
     eyewear: "眼镜",
@@ -50,8 +50,8 @@ export const messages = {
   },
   en: {
     collection: "Collection",
-    pickMatch: "Pick & Match",
-    pickMatchEn: "精品推荐",
+    pickMatch: "Price Check",
+    pickMatchEn: "价格速查",
     all: "All",
     watch: "Watches",
     eyewear: "Eyewear",
