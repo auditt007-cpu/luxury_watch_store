@@ -1,25 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { coverOf, formatPrice } from "@/lib/product";
+import { coverOf } from "@/lib/product";
 import { whatsappLink, buildQuoteMessage, buildQuoteUrl } from "@/lib/contact";
 import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
 import { translateCategory } from "@/lib/messages";
 import { useUI } from "@/lib/ui";
+import { clearMatchSession, loadMatchSession, saveMatchSession, type SavedMatchCard } from "@/lib/matchState";
 import { clearLikes, readLikes, removeLike, upsertLike, type LikedItem } from "@/lib/wishlist";
 
-type MatchCard = {
-  id: string;
-  title: string;
-  fullTitle: string;
-  category: string;
-  image: string;
-  price: number;
-  priceText: string;
-  highlights: string[];
-};
+type MatchCard = SavedMatchCard;
 
 const GUIDE_KEY = "has_seen_swipe_guide";
 
@@ -33,8 +26,10 @@ function shuffle<T>(list: T[]) {
 }
 
 export function PickMatch() {
+  const router = useRouter();
+  const pathname = usePathname();
   const { locale, t } = useI18n();
-  const { matchOpen, likesOpen, closeMatch, openLikes, closeLikes, openWechat, showToast } = useUI();
+  const { matchOpen, likesOpen, closeMatch, openMatch, openLikes, closeLikes, openWechat, showToast } = useUI();
   const [pool, setPool] = useState<MatchCard[]>([]);
   const [deck, setDeck] = useState<MatchCard[]>([]);
   const [likes, setLikes] = useState<LikedItem[]>([]);
@@ -42,6 +37,8 @@ export function PickMatch() {
   const [dragging, setDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const start = useRef({ x: 0, y: 0 });
+  const pointerMoved = useRef(false);
+  const restored = useRef(false);
 
   useEffect(() => {
     const sync = () => setLikes(readLikes());
@@ -51,6 +48,16 @@ export function PickMatch() {
   }, []);
 
   useEffect(() => {
+    if (pathname !== "/" || restored.current) return;
+    const saved = loadMatchSession();
+    if (!saved?.matchOpen) return;
+    restored.current = true;
+    setPool(saved.pool);
+    setDeck(saved.deck);
+    openMatch();
+  }, [openMatch, pathname]);
+
+  useEffect(() => {
     if (!matchOpen) return;
     const seen = window.localStorage.getItem(GUIDE_KEY) === "1";
     setShowGuide(!seen);
@@ -58,6 +65,12 @@ export function PickMatch() {
 
   useEffect(() => {
     if (!matchOpen || pool.length) return;
+    const saved = loadMatchSession();
+    if (saved?.pool.length) {
+      setPool(saved.pool);
+      setDeck(saved.deck.length ? saved.deck : shuffle(saved.pool));
+      return;
+    }
     fetch("/api/catalog")
       .then((res) => res.json())
       .then((rows: MatchCard[]) => {
@@ -67,6 +80,11 @@ export function PickMatch() {
       })
       .catch(() => undefined);
   }, [matchOpen, pool.length]);
+
+  useEffect(() => {
+    if (!matchOpen || !pool.length) return;
+    saveMatchSession({ pool, deck, matchOpen, likesOpen });
+  }, [deck, likesOpen, matchOpen, pool]);
 
   const current = deck[0];
   const next = deck[1];
@@ -81,6 +99,12 @@ export function PickMatch() {
     setOffset({ x: 0, y: 0 });
   }, [pool]);
 
+  const openProduct = useCallback(() => {
+    if (!current) return;
+    saveMatchSession({ pool, deck, matchOpen: true, likesOpen: false });
+    router.push(`/product/${current.id}?from=match`);
+  }, [current, deck, likesOpen, pool, router]);
+
   const decide = useCallback(
     (liked: boolean) => {
       if (!current || showGuide) return;
@@ -92,7 +116,7 @@ export function PickMatch() {
               title: current.fullTitle || current.title,
               category: current.category,
               image: current.image || coverOf([]),
-              priceText: formatPrice(current.price, current.priceText),
+              priceText: current.displayPrice || current.priceText || t("inquire"),
             },
             list,
           ),
@@ -104,11 +128,12 @@ export function PickMatch() {
         setOffset({ x: 0, y: 0 });
       }, 180);
     },
-    [current, showGuide],
+    [current, showGuide, t],
   );
 
   function onPointerDown(event: React.PointerEvent) {
     if (showGuide) return;
+    pointerMoved.current = false;
     (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
     setDragging(true);
     start.current = { x: event.clientX, y: event.clientY };
@@ -116,15 +141,20 @@ export function PickMatch() {
 
   function onPointerMove(event: React.PointerEvent) {
     if (!dragging || showGuide) return;
-    setOffset({
-      x: event.clientX - start.current.x,
-      y: event.clientY - start.current.y,
-    });
+    const dx = event.clientX - start.current.x;
+    const dy = event.clientY - start.current.y;
+    if (Math.abs(dx) > 12 || Math.abs(dy) > 12) pointerMoved.current = true;
+    setOffset({ x: dx, y: dy });
   }
 
   function onPointerUp() {
     if (!dragging) return;
     setDragging(false);
+    if (!pointerMoved.current && !showGuide && current) {
+      openProduct();
+      setOffset({ x: 0, y: 0 });
+      return;
+    }
     if (offset.x > 90) decide(true);
     else if (offset.x < -90) decide(false);
     else setOffset({ x: 0, y: 0 });
@@ -140,9 +170,10 @@ export function PickMatch() {
   );
 
   const overlayOpen = matchOpen || likesOpen;
+  const hideForProduct = pathname?.startsWith("/product/");
   const likesView = useMemo(() => likes, [likes]);
 
-  if (!overlayOpen) return null;
+  if (!overlayOpen || hideForProduct) return null;
 
   return (
     <div className="fixed inset-0 z-[70] bg-[radial-gradient(circle_at_top,#3a2f18_0%,#1c1812_42%,#12100d_100%)]">
@@ -172,6 +203,7 @@ export function PickMatch() {
             <button
               type="button"
               onClick={() => {
+                clearMatchSession();
                 if (likesOpen) closeLikes();
                 else closeMatch();
               }}
@@ -276,11 +308,8 @@ export function PickMatch() {
                           {t("inquireWechat")}
                         </button>
                         <Link
-                          href={`/product/${item.id}`}
-                          onClick={() => {
-                            closeLikes();
-                            closeMatch();
-                          }}
+                          href={`/product/${item.id}?from=match`}
+                          onClick={() => saveMatchSession({ pool, deck, matchOpen: true, likesOpen: true })}
                           className="rounded-full border border-white/30 px-3 py-1 text-[11px] text-white"
                         >
                           {t("viewProduct")}
@@ -330,11 +359,21 @@ export function PickMatch() {
               >
                 {t("skip")} ✕
               </div>
-              <div className="absolute inset-x-0 bottom-0 flex max-h-[25%] items-end bg-gradient-to-t from-black via-black/80 to-transparent px-5 py-4">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openProduct();
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
+                className="absolute inset-x-0 bottom-0 flex max-h-[30%] flex-col items-start bg-gradient-to-t from-black via-black/85 to-transparent px-5 py-4 text-left"
+              >
+                <p className="text-[10px] tracking-[0.25em] text-gold">{t("viewProduct")} →</p>
                 <h3 className="swipe-text-glow line-clamp-2 font-serif text-lg leading-snug text-white">
                   {current.title}
                 </h3>
-              </div>
+                <p className="mt-1 text-sm text-gold">{current.displayPrice || t("inquire")}</p>
+              </button>
             </article>
 
             {showGuide ? (

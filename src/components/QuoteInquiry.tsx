@@ -5,7 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import { whatsappLink, buildQuoteMessage, buildQuoteUrl } from "@/lib/contact";
 import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
-import { coverOf, formatPrice, type ProductDTO } from "@/lib/product";
+import { coverOf, type ProductDTO } from "@/lib/product";
+import { displayPriceSummary } from "@/lib/priceOptions";
 import { useUI } from "@/lib/ui";
 
 export function QuoteInquiry({ products }: { products: ProductDTO[] }) {
@@ -62,7 +63,15 @@ export function QuoteInquiry({ products }: { products: ProductDTO[] }) {
               <img src={coverOf(product.images)} alt="" className="h-24 w-24 rounded-xl object-cover" />
               <div className="min-w-0">
                 <h2 className="line-clamp-2 font-serif text-lg text-gold-soft">{headline}</h2>
-                <p className="mt-2 text-sm text-gold">{formatPrice(product.price, product.priceText, t("inquire"))}</p>
+                <p className="mt-2 text-sm text-gold">
+                  {displayPriceSummary(
+                    product.title,
+                    product.description,
+                    product.price,
+                    product.priceText,
+                    t("inquire"),
+                  )}
+                </p>
               </div>
             </Link>
           );

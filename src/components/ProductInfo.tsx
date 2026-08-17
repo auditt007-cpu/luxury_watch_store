@@ -1,13 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ProductDescription } from "@/components/ProductDescription";
 import { ConfigPriceSelector } from "@/components/ConfigPriceSelector";
+import { ProductBackLink } from "@/components/ProductBackLink";
 import { resolveMajorCategory } from "@/lib/category";
 import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
 import { translateCategory } from "@/lib/messages";
-import { parsePriceOptions, productHeadline, type PriceOption } from "@/lib/priceOptions";
+import {
+  parsePriceOptions,
+  productHeadline,
+  type PriceOption,
+} from "@/lib/priceOptions";
 import { type ProductDTO } from "@/lib/product";
 import { whatsappLink } from "@/lib/contact";
 import { useUI } from "@/lib/ui";
@@ -29,7 +34,7 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
   const inquiry = useMemo(() => {
     const configLine = selected?.label
       ? `\n配置：${selected.label}（${selected.priceText}）`
-      : selected?.priceText
+      : selected?.price
         ? `\n价格：${selected.priceText}`
         : "";
     return `${t("inquiryPrefix")}${headline}${configLine}`;
@@ -37,12 +42,12 @@ export function ProductInfo({ product }: { product: ProductDTO }) {
 
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <ProductBackLink />
+      </Suspense>
       <p className="text-xs tracking-[0.3em] text-gold">{translateCategory(major, locale)}</p>
       <h1 className="whitespace-pre-wrap font-serif text-3xl text-gold-soft sm:text-4xl">{headline}</h1>
-      <ConfigPriceSelector
-        options={options}
-        onChange={(option) => setSelected(option)}
-      />
+      <ConfigPriceSelector options={options} onChange={setSelected} />
       {product.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {product.tags.map((tag) => (

@@ -63,6 +63,7 @@ export const messages = {
     quoteEmpty: "清单为空或链接已失效",
     quoteSharePrefix: "你好，我想询价以下心仪单品：",
     configSelect: "版本 / 配置选择",
+    backToMatch: "返回划选",
   },
   en: {
     collection: "Collection",
@@ -126,6 +127,7 @@ export const messages = {
     quoteEmpty: "This list is empty or the link has expired",
     quoteSharePrefix: "Hi, I would like to inquire about these pieces:",
     configSelect: "Configuration",
+    backToMatch: "Back to swiping",
   },
 } as const;
 

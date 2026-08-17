@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { PriceOption } from "@/lib/priceOptions";
 import { useI18n } from "@/lib/i18n";
 
@@ -9,17 +9,24 @@ export function ConfigPriceSelector({
   onChange,
 }: {
   options: PriceOption[];
-  onChange: (option: PriceOption) => void;
+  onChange: (option: PriceOption | null) => void;
 }) {
   const { t } = useI18n();
   const [activeId, setActiveId] = useState(options[0]?.id || "");
 
-  if (options.length <= 1) {
-    const only = options[0];
-    if (!only) {
-      return <p className="text-2xl text-gold">{t("inquire")}</p>;
-    }
-    return <p className="text-2xl text-gold">{only.priceText}</p>;
+  useEffect(() => {
+    const first = options[0] || null;
+    setActiveId(first?.id || "");
+    onChange(first);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options]);
+
+  if (!options.length) {
+    return <p className="text-2xl text-gold">{t("inquire")}</p>;
+  }
+
+  if (options.length === 1) {
+    return <p className="text-2xl text-gold">{options[0].priceText}</p>;
   }
 
   const active = options.find((item) => item.id === activeId) || options[0];
@@ -44,7 +51,10 @@ export function ConfigPriceSelector({
                   : "border-gold/30 bg-black/30 text-gold-soft hover:border-gold/60"
               }`}
             >
-              {option.label}
+              <span className="block">{option.label}</span>
+              <span className={`mt-0.5 block ${selected ? "text-ink/80" : "text-gold"}`}>
+                {option.priceText}
+              </span>
             </button>
           );
         })}
