@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { coverOf, formatPrice } from "@/lib/product";
-import { whatsappLink } from "@/lib/contact";
+import { whatsappLink, buildQuoteMessage, buildQuoteUrl } from "@/lib/contact";
+import { splitProductCopy } from "@/lib/formatText";
 import { useI18n } from "@/lib/i18n";
 import { translateCategory } from "@/lib/messages";
 import { useUI } from "@/lib/ui";
@@ -40,7 +41,6 @@ export function PickMatch() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
   const start = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -189,7 +189,10 @@ export function PickMatch() {
               {likesView.length > 0 ? (
                 <button
                   type="button"
-                  onClick={() => setConfirmClear(true)}
+                  onClick={() => {
+                    clearLikes();
+                    setLikes([]);
+                  }}
                   className="inline-flex items-center gap-1.5 rounded-full border border-rose-300/50 bg-rose-500/15 px-3 py-1.5 text-xs text-rose-100"
                 >
                   <span aria-hidden>🗑</span>
@@ -197,35 +200,52 @@ export function PickMatch() {
                 </button>
               ) : null}
             </div>
-            {confirmClear ? (
-              <div className="mt-4 rounded-xl border border-gold/35 bg-black/60 p-4">
-                <p className="text-sm leading-6 text-white">{t("clearConfirm")}</p>
-                <div className="mt-3 flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      clearLikes();
-                      setLikes([]);
-                      setConfirmClear(false);
-                    }}
-                    className="rounded-full bg-gold px-4 py-2 text-xs text-ink"
-                  >
-                    {t("confirmYes")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmClear(false)}
-                    className="rounded-full border border-white/30 px-4 py-2 text-xs text-white"
-                  >
-                    {t("confirmNo")}
-                  </button>
-                </div>
-              </div>
-            ) : null}
             {!likesView.length ? (
               <p className="mt-6 text-sm text-white/70">{t("noLikes")}</p>
             ) : (
               <div className="mt-5 min-h-0 flex-1 space-y-4 overflow-y-auto">
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={whatsappLink(
+                      buildQuoteMessage(
+                        t("quoteSharePrefix"),
+                        likesView.map((item) => splitProductCopy(item.title).headline),
+                        buildQuoteUrl(likesView.map((item) => item.id)),
+                      ),
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-full bg-gold px-3 py-1.5 text-[11px] text-ink"
+                  >
+                    {t("shareListWA")}
+                  </a>
+                  <button
+                    type="button"
+                    className="rounded-full border border-gold/50 bg-black/40 px-3 py-1.5 text-[11px] text-gold"
+                    onClick={async () => {
+                      const message = buildQuoteMessage(
+                        t("quoteSharePrefix"),
+                        likesView.map((item) => splitProductCopy(item.title).headline),
+                        buildQuoteUrl(likesView.map((item) => item.id)),
+                      );
+                      await navigator.clipboard.writeText(message);
+                      showToast(t("copiedGeneric"));
+                      openWechat(message);
+                    }}
+                  >
+                    {t("shareListWechat")}
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded-full border border-white/30 px-3 py-1.5 text-[11px] text-white"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(buildQuoteUrl(likesView.map((item) => item.id)));
+                      showToast(t("copiedGeneric"));
+                    }}
+                  >
+                    {t("copyQuoteLink")}
+                  </button>
+                </div>
                 {likesView.map((item) => (
                   <div key={item.id} className="flex gap-3 rounded-xl border border-gold/25 bg-black/35 p-3">
                     <img src={item.image} alt="" className="h-20 w-20 rounded-lg object-cover" />

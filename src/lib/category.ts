@@ -71,6 +71,13 @@ const RULES: { category: MajorCategory; keywords: string[]; weight: number }[] =
       "雷朋",
       "ray-ban",
       "rayban",
+      "sunglasses",
+      "sunglass",
+      "eyewear",
+      "glasses",
+      "optical",
+      "cartier glasses",
+      "ct0",
     ],
   },
   {
@@ -181,6 +188,33 @@ function normalizeCategory(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "");
 }
 
+function looksLikeEyewear(text: string) {
+  const blob = text.toLowerCase();
+  const keywords = [
+    "墨镜",
+    "太阳镜",
+    "太阳眼镜",
+    "眼镜",
+    "镜框",
+    "光学镜",
+    "近视镜",
+    "蛤蟆镜",
+    "镜片",
+    "镜腿",
+    "sunglasses",
+    "sunglass",
+    "eyewear",
+    "glasses",
+    "optical",
+  ];
+  if (keywords.some((word) => blob.includes(word))) return true;
+  if (/\bct0\d{3}/i.test(blob)) return true;
+  if (/model[：:]\s*ct/i.test(blob)) return true;
+  if (/\d{2}\s*[口□]\s*\d{2}/.test(blob)) return true;
+  if (/\d{2}\s*[-–]\s*\d{2}\s*[-–]\s*1[34]\d/.test(blob)) return true;
+  return false;
+}
+
 export function resolveMajorCategory(
   category: string,
   title = "",
@@ -188,12 +222,14 @@ export function resolveMajorCategory(
   tags: string[] = [],
 ): MajorCategory | "其他" {
   const raw = category.trim();
+  const blob = `${category} ${title} ${description} ${tags.join(" ")}`;
+  if (looksLikeEyewear(blob)) return "眼镜";
+
   if (MAJOR_SET.has(raw)) return raw as MajorCategory;
 
   const alias = CATEGORY_ALIASES[normalizeCategory(raw)] || CATEGORY_ALIASES[raw];
   if (alias) return alias;
 
-  const blob = `${category} ${title} ${description} ${tags.join(" ")}`.toLowerCase();
   const scores: Record<MajorCategory, number> = {
     腕表: 0,
     眼镜: 0,
@@ -201,9 +237,10 @@ export function resolveMajorCategory(
     鞋靴: 0,
   };
 
+  const lower = blob.toLowerCase();
   for (const rule of RULES) {
     for (const keyword of rule.keywords) {
-      if (blob.includes(keyword.toLowerCase())) {
+      if (lower.includes(keyword.toLowerCase())) {
         scores[rule.category] += rule.weight;
       }
     }

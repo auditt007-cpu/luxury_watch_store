@@ -56,6 +56,12 @@ export const messages = {
     confirmYes: "确定清空",
     confirmNo: "取消",
     noLikes: "暂无喜欢的商品，快去滑动挑选吧",
+    shareListWA: "WhatsApp 发送清单",
+    shareListWechat: "微信发送清单",
+    copyQuoteLink: "复制询价链接",
+    quoteListTitle: "专属询价单",
+    quoteEmpty: "清单为空或链接已失效",
+    quoteSharePrefix: "你好，我想询价以下心仪单品：",
   },
   en: {
     collection: "Collection",
@@ -112,6 +118,12 @@ export const messages = {
     confirmYes: "Clear list",
     confirmNo: "Cancel",
     noLikes: "No favorites yet. Start swiping to pick.",
+    shareListWA: "Send list on WhatsApp",
+    shareListWechat: "Send list on WeChat",
+    copyQuoteLink: "Copy inquiry link",
+    quoteListTitle: "Inquiry list",
+    quoteEmpty: "This list is empty or the link has expired",
+    quoteSharePrefix: "Hi, I would like to inquire about these pieces:",
   },
 } as const;
 

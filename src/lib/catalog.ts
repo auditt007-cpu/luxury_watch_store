@@ -115,6 +115,13 @@ export async function listPublishedProducts(q = "", category = ""): Promise<Prod
   return filterProducts(productsFromJson(), q, category);
 }
 
+export async function listPublishedByIds(ids: string[]): Promise<ProductDTO[]> {
+  const wanted = new Set(ids.map((id) => id.trim()).filter(Boolean));
+  if (!wanted.size) return [];
+  const products = await listPublishedProducts();
+  return products.filter((item) => wanted.has(item.id) || wanted.has(item.sourceId));
+}
+
 export async function getPublishedProduct(id: string): Promise<ProductDTO | null> {
   if (!isBuildPhase()) {
     try {
