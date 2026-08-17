@@ -268,19 +268,10 @@ export function PickMatch() {
               >
                 {t("skip")} ✕
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/85 to-transparent p-5">
-                <p className="swipe-text-glow text-[11px] tracking-[0.25em] text-gold">
-                  {translateCategory(current.category, locale)}
-                </p>
-                <h3 className="swipe-text-glow mt-2 font-serif text-xl text-white">{current.title}</h3>
-                <p className="mt-1 text-sm text-gold">{formatPrice(current.price, current.priceText)}</p>
-                {current.highlights.length > 0 && (
-                  <div className="mt-3 space-y-1 whitespace-pre-wrap text-xs leading-5 text-white/85">
-                    {current.highlights.map((line) => (
-                      <p key={line}>{line}</p>
-                    ))}
-                  </div>
-                )}
+              <div className="absolute inset-x-0 bottom-0 flex max-h-[25%] items-end bg-gradient-to-t from-black via-black/80 to-transparent px-5 py-4">
+                <h3 className="swipe-text-glow line-clamp-2 font-serif text-lg leading-snug text-white">
+                  {current.title}
+                </h3>
               </div>
             </article>
 
