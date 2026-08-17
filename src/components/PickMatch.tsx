@@ -20,6 +20,8 @@ type MatchCard = {
   highlights: string[];
 };
 
+const GUIDE_KEY = "has_seen_swipe_guide";
+
 function shuffle<T>(list: T[]) {
   const next = [...list];
   for (let i = next.length - 1; i > 0; i -= 1) {
@@ -37,11 +39,18 @@ export function PickMatch() {
   const [likes, setLikes] = useState<LikedItem[]>([]);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const start = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     setLikes(readLikes());
   }, []);
+
+  useEffect(() => {
+    if (!matchOpen) return;
+    const seen = window.localStorage.getItem(GUIDE_KEY) === "1";
+    setShowGuide(!seen);
+  }, [matchOpen]);
 
   useEffect(() => {
     if (!matchOpen || pool.length) return;
@@ -57,6 +66,11 @@ export function PickMatch() {
   const current = deck[0];
   const next = deck[1];
 
+  const dismissGuide = useCallback(() => {
+    window.localStorage.setItem(GUIDE_KEY, "1");
+    setShowGuide(false);
+  }, []);
+
   const restart = useCallback(() => {
     setDeck(shuffle(pool));
     setOffset({ x: 0, y: 0 });
@@ -64,7 +78,7 @@ export function PickMatch() {
 
   const decide = useCallback(
     (liked: boolean) => {
-      if (!current) return;
+      if (!current || showGuide) return;
       if (liked) {
         setLikes((list) =>
           upsertLike(
@@ -85,17 +99,18 @@ export function PickMatch() {
         setOffset({ x: 0, y: 0 });
       }, 180);
     },
-    [current],
+    [current, showGuide],
   );
 
   function onPointerDown(event: React.PointerEvent) {
+    if (showGuide) return;
     (event.target as HTMLElement).setPointerCapture?.(event.pointerId);
     setDragging(true);
     start.current = { x: event.clientX, y: event.clientY };
   }
 
   function onPointerMove(event: React.PointerEvent) {
-    if (!dragging) return;
+    if (!dragging || showGuide) return;
     setOffset({
       x: event.clientX - start.current.x,
       y: event.clientY - start.current.y,
@@ -125,20 +140,29 @@ export function PickMatch() {
   if (!overlayOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[70] bg-black/88">
-      <div className="mx-auto flex h-full max-w-xl flex-col px-5 py-5">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs tracking-[0.3em] text-gold">{t("pickMatch")}</p>
-            <p className="mt-1 text-xs text-zinc-500">{t("matchHint")}</p>
+    <div className="fixed inset-0 z-[70] bg-[radial-gradient(circle_at_top,#3a2f18_0%,#1c1812_42%,#12100d_100%)]">
+      <div className="pointer-events-none absolute inset-0 bg-black/25" />
+      <div className="relative mx-auto flex h-full max-w-xl flex-col px-5 py-5">
+        <div className="swipe-toolbar flex items-center justify-between gap-3 rounded-2xl px-3 py-3">
+          <div className="min-w-0">
+            <p className="swipe-text-glow text-xs tracking-[0.3em] text-gold">{t("pickMatch")}</p>
+            <p className="mt-1 text-xs text-white/80">{t("matchHint")}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
-              onClick={openLikes}
-              className="rounded-full border border-gold/30 px-3 py-1.5 text-xs text-gold"
+              onClick={() => setShowGuide(true)}
+              className="swipe-toolbar-btn flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold"
+              aria-label={t("helpGuide")}
+              title={t("helpGuide")}
             >
-              {t("viewLikes")} · {likes.length}
+              ?
+            </button>
+            <button type="button" onClick={restart} className="swipe-toolbar-btn rounded-full px-3 py-1.5 text-xs">
+              {t("restart")}
+            </button>
+            <button type="button" onClick={openLikes} className="swipe-toolbar-btn rounded-full px-3 py-1.5 text-xs">
+              ♥ {likes.length}
             </button>
             <button
               type="button"
@@ -146,7 +170,7 @@ export function PickMatch() {
                 if (likesOpen) closeLikes();
                 else closeMatch();
               }}
-              className="rounded-full border border-gold/30 px-3 py-1.5 text-xs text-gold-soft"
+              className="swipe-toolbar-btn rounded-full bg-gold/90 px-3 py-1.5 text-xs text-ink"
             >
               {t("close")}
             </button>
@@ -154,21 +178,21 @@ export function PickMatch() {
         </div>
 
         {likesOpen ? (
-          <div className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-gold/20 bg-ink/80 p-4">
-            <h2 className="font-serif text-2xl text-gold-soft">{t("likesTitle")}</h2>
+          <div className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-gold/40 bg-black/45 p-4 backdrop-blur-md">
+            <h2 className="swipe-text-glow font-serif text-2xl text-gold-soft">{t("likesTitle")}</h2>
             {!likesView.length ? (
-              <p className="mt-6 text-sm text-zinc-500">{t("noLikes")}</p>
+              <p className="mt-6 text-sm text-white/70">{t("noLikes")}</p>
             ) : (
               <div className="mt-5 space-y-4">
                 {likesView.map((item) => (
-                  <div key={item.id} className="flex gap-3 rounded-xl border border-gold/15 p-3">
+                  <div key={item.id} className="flex gap-3 rounded-xl border border-gold/25 bg-black/35 p-3">
                     <img src={item.image} alt="" className="h-20 w-20 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="text-[10px] tracking-[0.2em] text-gold">
                         {translateCategory(item.category, locale)}
                       </p>
-                      <p className="mt-1 line-clamp-2 text-sm text-gold-soft">{item.title}</p>
-                      <p className="mt-1 text-xs text-zinc-500">{item.priceText}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-white">{item.title}</p>
+                      <p className="mt-1 text-xs text-gold-soft">{item.priceText}</p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <a
                           href={whatsappLink(inquiry(item.title))}
@@ -180,7 +204,7 @@ export function PickMatch() {
                         </a>
                         <button
                           type="button"
-                          className="rounded-full border border-gold/30 px-3 py-1 text-[11px] text-gold"
+                          className="rounded-full border border-gold/50 bg-black/40 px-3 py-1 text-[11px] text-gold"
                           onClick={async () => {
                             await navigator.clipboard.writeText(inquiry(item.title));
                             showToast(t("copiedGeneric"));
@@ -195,13 +219,13 @@ export function PickMatch() {
                             closeLikes();
                             closeMatch();
                           }}
-                          className="rounded-full border border-gold/20 px-3 py-1 text-[11px] text-zinc-400"
+                          className="rounded-full border border-white/30 px-3 py-1 text-[11px] text-white"
                         >
                           {t("viewProduct")}
                         </Link>
                         <button
                           type="button"
-                          className="text-[11px] text-zinc-600"
+                          className="text-[11px] text-white/70"
                           onClick={() => setLikes((list) => removeLike(item.id, list))}
                         >
                           ✕
@@ -216,12 +240,12 @@ export function PickMatch() {
         ) : current ? (
           <div className="relative mt-6 flex min-h-0 flex-1 items-center justify-center">
             {next ? (
-              <article className="absolute w-full max-w-sm scale-95 rounded-3xl border border-gold/10 bg-ink opacity-50">
+              <article className="absolute w-full max-w-sm scale-95 rounded-3xl border border-gold/20 bg-[#2a2418] opacity-60">
                 <img src={next.image} alt="" className="aspect-[4/5] w-full rounded-3xl object-cover" />
               </article>
             ) : null}
             <article
-              className="relative w-full max-w-sm cursor-grab touch-none overflow-hidden rounded-3xl border border-gold/30 bg-ink shadow-gold active:cursor-grabbing"
+              className="relative w-full max-w-sm cursor-grab touch-none overflow-hidden rounded-3xl border-2 border-gold/55 bg-[#2a2418] shadow-gold active:cursor-grabbing"
               style={{
                 transform: `translate3d(${offset.x}px, ${offset.y}px, 0) rotate(${rotate}deg)`,
                 transition: dragging ? "none" : "transform 180ms ease",
@@ -232,20 +256,26 @@ export function PickMatch() {
               onPointerCancel={onPointerUp}
             >
               <img src={current.image} alt={current.title} className="aspect-[4/5] w-full object-cover" />
-              <div className="absolute left-4 top-4 rounded-full border border-rose-400/70 px-3 py-1 text-xs text-rose-300" style={{ opacity: likeOpacity }}>
+              <div
+                className="absolute left-4 top-4 rounded-full border-2 border-emerald-300 bg-black/70 px-3 py-1 text-xs font-semibold text-emerald-200"
+                style={{ opacity: likeOpacity }}
+              >
                 {t("like")} ❤️
               </div>
-              <div className="absolute right-4 top-4 rounded-full border border-zinc-400/70 px-3 py-1 text-xs text-zinc-300" style={{ opacity: skipOpacity }}>
+              <div
+                className="absolute right-4 top-4 rounded-full border-2 border-rose-300 bg-black/70 px-3 py-1 text-xs font-semibold text-white"
+                style={{ opacity: skipOpacity }}
+              >
                 {t("skip")} ✕
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/80 to-transparent p-5">
-                <p className="text-[11px] tracking-[0.25em] text-gold">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/85 to-transparent p-5">
+                <p className="swipe-text-glow text-[11px] tracking-[0.25em] text-gold">
                   {translateCategory(current.category, locale)}
                 </p>
-                <h3 className="mt-2 font-serif text-xl text-gold-soft">{current.title}</h3>
+                <h3 className="swipe-text-glow mt-2 font-serif text-xl text-white">{current.title}</h3>
                 <p className="mt-1 text-sm text-gold">{formatPrice(current.price, current.priceText)}</p>
                 {current.highlights.length > 0 && (
-                  <div className="mt-3 space-y-1 whitespace-pre-wrap text-xs leading-5 text-zinc-400">
+                  <div className="mt-3 space-y-1 whitespace-pre-wrap text-xs leading-5 text-white/85">
                     {current.highlights.map((line) => (
                       <p key={line}>{line}</p>
                     ))}
@@ -253,15 +283,39 @@ export function PickMatch() {
                 )}
               </div>
             </article>
+
+            {showGuide ? (
+              <button
+                type="button"
+                className="absolute inset-0 z-10 flex flex-col items-center justify-end rounded-3xl bg-black/55 px-5 pb-8 backdrop-blur-[2px]"
+                onClick={dismissGuide}
+              >
+                <div className="mb-auto mt-16 flex w-full max-w-xs justify-between px-2 text-3xl text-white">
+                  <span className="swipe-hint-left drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">👈</span>
+                  <span className="swipe-hint-right drop-shadow-[0_0_10px_rgba(201,162,39,0.9)]">👉</span>
+                </div>
+                <div className="w-full max-w-sm rounded-2xl border border-gold/50 bg-black/70 p-5 text-left shadow-gold">
+                  <p className="swipe-text-glow text-sm leading-7 text-white">{t("guideRight")}</p>
+                  <p className="swipe-text-glow mt-2 text-sm leading-7 text-white">{t("guideLeft")}</p>
+                  <div className="mt-4 flex items-center justify-center gap-10 text-xs tracking-widest text-gold-soft">
+                    <span>✕ {t("skipLabel")}</span>
+                    <span>❤️ {t("likeLabel")}</span>
+                  </div>
+                  <span className="mt-5 flex w-full justify-center rounded-full bg-gold px-5 py-2.5 text-sm text-ink">
+                    {t("startPick")}
+                  </span>
+                </div>
+              </button>
+            ) : null}
           </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <p className="font-serif text-2xl text-gold-soft">{t("deckEmpty")}</p>
+            <p className="swipe-text-glow font-serif text-2xl text-gold-soft">{t("deckEmpty")}</p>
             <div className="mt-6 flex gap-3">
               <button type="button" onClick={restart} className="rounded-full bg-gold px-5 py-2 text-sm text-ink">
                 {t("restart")}
               </button>
-              <button type="button" onClick={openLikes} className="rounded-full border border-gold/30 px-5 py-2 text-sm text-gold">
+              <button type="button" onClick={openLikes} className="swipe-toolbar-btn rounded-full px-5 py-2 text-sm">
                 {t("viewLikes")}
               </button>
             </div>
@@ -269,23 +323,29 @@ export function PickMatch() {
         )}
 
         {!likesOpen && current ? (
-          <div className="mt-5 flex items-center justify-center gap-6 pb-3">
-            <button
-              type="button"
-              onClick={() => decide(false)}
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-zinc-500 text-xl text-zinc-300"
-              aria-label={t("skip")}
-            >
-              ✕
-            </button>
-            <button
-              type="button"
-              onClick={() => decide(true)}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-gold text-xl text-ink"
-              aria-label={t("like")}
-            >
-              ❤
-            </button>
+          <div className="mt-5 flex items-end justify-center gap-10 pb-3">
+            <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => decide(false)}
+                className="swipe-btn-skip swipe-icon-glow flex h-16 w-16 items-center justify-center rounded-full text-2xl"
+                aria-label={t("skip")}
+              >
+                ✕
+              </button>
+              <span className="swipe-text-glow text-[11px] tracking-widest text-white">{t("skipLabel")}</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => decide(true)}
+                className="swipe-btn-like swipe-icon-glow flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-full text-2xl"
+                aria-label={t("like")}
+              >
+                ❤
+              </button>
+              <span className="swipe-text-glow text-[11px] tracking-widest text-gold">{t("likeLabel")}</span>
+            </div>
           </div>
         ) : null}
       </div>

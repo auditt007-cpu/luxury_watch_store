@@ -41,6 +41,12 @@ export const messages = {
     likedCount: "已喜欢",
     viewProduct: "查看详情",
     inquiryPrefix: "你好，我想询价：",
+    guideRight: "👉 向右滑：加入喜欢心愿单",
+    guideLeft: "👈 向左滑：跳过查看下一款",
+    startPick: "开始挑选",
+    helpGuide: "滑动说明",
+    skipLabel: "不喜欢",
+    likeLabel: "喜欢",
   },
   en: {
     collection: "Collection",
@@ -82,6 +88,12 @@ export const messages = {
     likedCount: "Liked",
     viewProduct: "View details",
     inquiryPrefix: "Hi, I would like to inquire about: ",
+    guideRight: "👉 Swipe right: add to wishlist",
+    guideLeft: "👈 Swipe left: skip to the next piece",
+    startPick: "Start picking",
+    helpGuide: "How to swipe",
+    skipLabel: "Skip",
+    likeLabel: "Like",
   },
 } as const;
 

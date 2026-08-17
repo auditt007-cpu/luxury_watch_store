@@ -42,3 +42,83 @@ body {
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
 }
+
+.swipe-text-glow {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 12px rgba(201, 162, 39, 0.35);
+}
+
+.swipe-icon-glow {
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+}
+
+.swipe-btn-skip {
+  background: linear-gradient(180deg, #f6f3ea, #d9d4c8);
+  color: #1a1a1a;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 1px rgba(244, 63, 94, 0.35),
+    0 0 22px rgba(244, 63, 94, 0.28),
+    0 0 28px rgba(255, 255, 255, 0.28),
+    0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.swipe-btn-like {
+  background: linear-gradient(180deg, #e6c24a, #c9a227);
+  color: #111;
+  border: 2px solid #f8e7a8;
+  box-shadow:
+    0 0 0 1px rgba(16, 185, 129, 0.45),
+    0 0 26px rgba(201, 162, 39, 0.7),
+    0 0 18px rgba(16, 185, 129, 0.35),
+    0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.swipe-toolbar {
+  background: rgba(12, 10, 8, 0.72);
+  border: 1px solid rgba(201, 162, 39, 0.55);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.swipe-toolbar-btn {
+  color: #f8f4ea;
+  border: 1px solid rgba(201, 162, 39, 0.7);
+  background: rgba(201, 162, 39, 0.16);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.swipe-toolbar-btn:hover {
+  background: rgba(201, 162, 39, 0.32);
+}
+
+@keyframes swipe-hint-right {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateX(16px);
+    opacity: 1;
+  }
+}
+
+@keyframes swipe-hint-left {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateX(-16px);
+    opacity: 1;
+  }
+}
+
+.swipe-hint-right {
+  animation: swipe-hint-right 1.4s ease-in-out infinite;
+}
+
+.swipe-hint-left {
+  animation: swipe-hint-left 1.4s ease-in-out infinite;
+}
