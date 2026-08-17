@@ -20,6 +20,11 @@ export function readLikes(): LikedItem[] {
 
 export function writeLikes(items: LikedItem[]) {
   window.localStorage.setItem(KEY, JSON.stringify(items));
+  window.dispatchEvent(new Event("atelier-likes-changed"));
+}
+
+export function clearLikes() {
+  writeLikes([]);
 }
 
 export function upsertLike(item: LikedItem, list: LikedItem[]) {

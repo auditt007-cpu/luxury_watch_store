@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
+import { QuoteBanner } from "@/components/QuoteBanner";
 import { FilterBar } from "@/components/FilterBar";
 import { ProductGrid } from "@/components/ProductGrid";
 import { listPublishedProducts } from "@/lib/catalog";
@@ -21,6 +22,7 @@ export default async function HomePage({
     <>
       <Header />
       <Hero />
+      <QuoteBanner />
       <main id="collection">
         <Suspense>
           <FilterBar current={category} query={q} />

@@ -7,7 +7,7 @@ import { whatsappLink } from "@/lib/contact";
 import { useI18n } from "@/lib/i18n";
 import { translateCategory } from "@/lib/messages";
 import { useUI } from "@/lib/ui";
-import { readLikes, removeLike, upsertLike, type LikedItem } from "@/lib/wishlist";
+import { clearLikes, readLikes, removeLike, upsertLike, type LikedItem } from "@/lib/wishlist";
 
 type MatchCard = {
   id: string;
@@ -40,10 +40,14 @@ export function PickMatch() {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
   const start = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    setLikes(readLikes());
+    const sync = () => setLikes(readLikes());
+    sync();
+    window.addEventListener("atelier-likes-changed", sync);
+    return () => window.removeEventListener("atelier-likes-changed", sync);
   }, []);
 
   useEffect(() => {
@@ -179,12 +183,49 @@ export function PickMatch() {
         </div>
 
         {likesOpen ? (
-          <div className="mt-5 min-h-0 flex-1 overflow-y-auto rounded-2xl border border-gold/40 bg-black/45 p-4 backdrop-blur-md">
-            <h2 className="swipe-text-glow font-serif text-2xl text-gold-soft">{t("likesTitle")}</h2>
+          <div className="mt-5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gold/40 bg-black/45 p-4 backdrop-blur-md">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="swipe-text-glow font-serif text-2xl text-gold-soft">{t("likesTitle")}</h2>
+              {likesView.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmClear(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-rose-300/50 bg-rose-500/15 px-3 py-1.5 text-xs text-rose-100"
+                >
+                  <span aria-hidden>🗑</span>
+                  {t("clearAll")}
+                </button>
+              ) : null}
+            </div>
+            {confirmClear ? (
+              <div className="mt-4 rounded-xl border border-gold/35 bg-black/60 p-4">
+                <p className="text-sm leading-6 text-white">{t("clearConfirm")}</p>
+                <div className="mt-3 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearLikes();
+                      setLikes([]);
+                      setConfirmClear(false);
+                    }}
+                    className="rounded-full bg-gold px-4 py-2 text-xs text-ink"
+                  >
+                    {t("confirmYes")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmClear(false)}
+                    className="rounded-full border border-white/30 px-4 py-2 text-xs text-white"
+                  >
+                    {t("confirmNo")}
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {!likesView.length ? (
               <p className="mt-6 text-sm text-white/70">{t("noLikes")}</p>
             ) : (
-              <div className="mt-5 space-y-4">
+              <div className="mt-5 min-h-0 flex-1 space-y-4 overflow-y-auto">
                 {likesView.map((item) => (
                   <div key={item.id} className="flex gap-3 rounded-xl border border-gold/25 bg-black/35 p-3">
                     <img src={item.image} alt="" className="h-20 w-20 rounded-lg object-cover" />
