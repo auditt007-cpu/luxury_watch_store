@@ -47,6 +47,8 @@ export const messages = {
     helpGuide: "滑动说明",
     skipLabel: "不喜欢",
     likeLabel: "喜欢",
+    wechatBrowserTip: "微信内暂不支持完整选款体验，请点击右上角【···】选择【在浏览器打开】以获得流畅浏览体验",
+    wechatBrowserContinue: "知道了 / 继续在微信内浏览",
   },
   en: {
     collection: "Collection",
@@ -94,6 +96,8 @@ export const messages = {
     helpGuide: "How to swipe",
     skipLabel: "Skip",
     likeLabel: "Like",
+    wechatBrowserTip: "Full browsing is limited inside WeChat. Tap the top-right [···] and choose [Open in Browser] for a smoother experience.",
+    wechatBrowserContinue: "Got it / Continue in WeChat",
   },
 } as const;
 
